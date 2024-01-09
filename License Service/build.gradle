@@ -2,14 +2,19 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.1'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'com.palantir.docker' version '0.35.0'
 }
 
 group = 'com.optimagrowth'
 version = '0.0.1-SNAPSHOT'
 
-java {
-    sourceCompatibility = '17'
+ext {
+    dockerimageprefix = 'ostock'
 }
+
+/*java {
+    sourceCompatibility = '17'
+}*/
 
 repositories {
     mavenCentral()
@@ -18,12 +23,24 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 }
 
+docker {
+    println("${dockerimageprefix}:${project.version}")
+    name "spring-example:${project.version}"
+    files tasks.bootJar.outputs.files
+    buildArgs(['JAR_FILE': tasks.bootJar.outputs.files.singleFile.name])
+
+}
+
+
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+tasks.build.dependsOn bootJar
